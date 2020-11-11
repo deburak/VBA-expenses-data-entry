@@ -1,0 +1,126 @@
+Option Explicit
+
+Private Sub btnAdd_Click()
+
+'HANDELING EMPTY VALUES. Userform must prevent entering empty values by the user, since they would cause the uneven distribution of data into rows.
+'code is written so that the last empty cell in column is populated with values from userform.
+'Therefore empty row would mean that  in next entries it would not be placed in the same row as other data.
+
+'if the user forgets to choose receiver, the entry will not happen and label for Receiver will be colord red and focus will get on cmbSelecet
+If cmbSelect.Value = "" Then
+lblReceiver.ForeColor = vbRed
+cmbSelect.SetFocus
+Exit Sub
+End If
+
+'if the user forgets to enter expense, the entry will not happen and label for expanse will be colord red and focus will get on txtExpense
+If txtExpense.Value = "" Then
+lblExpense.ForeColor = vbRed
+txtExpense.SetFocus
+Exit Sub
+End If
+
+'if the user forgets to choose category, the entry will not happen and label for Category colord red and focus will get on cmboxCategory
+If cmboxCategory.Value = "" Then
+lblCategory.ForeColor = vbRed
+cmboxCategory.SetFocus
+Exit Sub
+End If
+
+'if the user forgets to enter price, the entry will not happen and label for Bill number will be colord red and focus will get on txtExpense
+If txtPrice.Value = "" Then
+lblPrice.ForeColor = vbRed
+txtPrice.SetFocus
+Exit Sub
+End If
+
+'if the user forgets to enter bill number, the entry will not happen and label for Bill number will be colord red and focus will get on txtExpense
+If txtBillNo.Value = "" Then
+lblBill.ForeColor = vbRed
+lblBill.SetFocus
+Exit Sub
+End If
+
+'prevent entering non numerical values as price
+If IsNumeric(txtPrice.Value) = False Then
+    MsgBox "Please enter numeric value for price"
+    lblPrice.ForeColor = vbRed
+    txtPrice.SetFocus
+    Exit Sub
+End If
+
+'ENTERING VALUES IN EXCEL TABLE
+'entered values are distributed on worksheets according to their category. The downside is that if user changes name of the sheet, code will not work.
+'to worked around it make a variable in excel, consisting of sheets names. I made it with formula:
+'=MID(CELL("filename";Food_n_drink!A1);FIND("]";CELL("filename";Food_n_drink!A1))+1;255): this formula returns the name of sheet Food_n_drink.
+
+'activates the sheets of category the user picked.
+Sheets(cmboxCategory.Value).Activate
+
+'entering values in first row.
+If Range("A2").Value = "" Then
+    Range("A2").Value = 1
+    Range("b2").Value = txtExpense.Value
+    'user picks company name,address and country in combobox cmbSelect. If the receiver is not in the combobox, user can click on ad new button, and adds new
+    'reciver to table of receivers. Table is in sheet receivers. Values of comany address and country are then extracted from this table with worksheet function.
+    Range("c2").Value = cmbSelect.Value
+    Range("d2").Value = WorksheetFunction.VLookup(cmbSelect.Value, Worksheets("Receivers").Range("b3:c730"), 2, False)
+    Range("e2").Value = WorksheetFunction.VLookup(cmbSelect.Value, Worksheets("Receivers").Range("b3:d730"), 3, False)
+    Range("F2").Value = txtPrice.Value
+    Range("G2").Value = txtBillNo.Value
+'entering values on the end of the table after first row
+Else
+    Range("A1").End(xlDown).Offset(1, 0).Value = Range("A1").End(xlDown).Value + 1
+    Range("b1").End(xlDown).Offset(1, 0).Value = txtExpense.Value
+    Range("c1").End(xlDown).Offset(1, 0).Value = cmbSelect.Value
+    Range("d1").End(xlDown).Offset(1, 0).Value = WorksheetFunction.VLookup(cmbSelect.Value, Worksheets("Receivers").Range("b3:c730"), 2, False)
+    Range("e1").End(xlDown).Offset(1, 0).Value = WorksheetFunction.VLookup(cmbSelect.Value, Worksheets("Receivers").Range("b3:d730"), 3, False)
+    Range("F1").End(xlDown).Offset(1, 0).Value = txtPrice.Value
+    Range("G1").End(xlDown).Offset(1, 0).Value = txtBillNo.Value
+ End If
+ 
+'PREPARE USER FORM FOR NEW ENTRY
+
+'empty fields on user form
+txtExpense.Value = ""
+cmbSelect.Value = ""
+cmboxCategory.Value = ""
+txtPrice.Value = ""
+txtBillNo.Value = ""
+
+'color back to black if it was changed
+lblExpense.ForeColor = vbBlack
+lblCategory.ForeColor = vbBlack
+lblPrice.ForeColor = vbBlack
+lblReceiver.ForeColor = vbBlack
+lblBill.ForeColor = vbBlack
+
+
+
+End Sub
+
+'open new entry form to add receivers. Simple code to enter values in sheet Receivers have to be added to this user form
+Private Sub cmbAddNew_Click()
+usfAddReceiver.Show
+End Sub
+
+'change red colors back to black when user enters missing values
+Private Sub cmbSelect_Change()
+lblReceiver.ForeColor = vbBlack
+End Sub
+Private Sub txtExpense_Change()
+lblExpense.ForeColor = vbBlack
+End Sub
+Private Sub txtBillNo_Change()
+lblBill.ForeColor = vbBlack
+End Sub
+Private Sub txtPrice_Change()
+lblPrice.ForeColor = vbBlack
+End Sub
+
+'close user form
+Private Sub cmdClose_Click()
+Unload Me
+End Sub
+
+
